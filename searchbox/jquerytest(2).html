@@ -1,0 +1,184 @@
+<!--log:
+jquery改写第二版，DOM结构做了调整
+input框是用户定义的，输入隐藏框和候选词条list都是后生成的，均用class定义，不引入id
+在DOM操作上以input和后生成的searchitem做参考进行元素查找
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+.searchbox-searchlist {
+	background: #eae9eb;
+	width: 153px;
+	max-height: 250px;
+	position: relative;
+	z-index: 1000;
+	border: 1px solid #c0c0c0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.searchbox-searchlist div {
+	height: 25px;
+	padding-left: 3px;
+}
+
+.highlight {
+	background: #85a2c8;
+	cursor: pointer;
+}
+
+.searchbox {
+	display:none;
+}
+
+li {
+	list-style:none outside none;
+	width:200px;
+	float:left;
+}
+</style>
+</head>
+<body>
+	<div>
+		<ul>
+			<li>test1</li>
+			<li>test2</li>
+			<li>
+				<input id="searchword" class="cs2c_searchbox" style="width: 149px" ><!-- 用户自己定义的 -->	
+				<div class="searchbox"><!-- 控件生成的 -->
+					<input type="hidden" class="searchbox-orgword"><!-- 控件生成的 -->
+					<div class="searchbox-searchlist" ></div><!-- 控件生成的 -->
+				</div>
+			</li>		
+		</ul>
+	</div>
+	
+</body>
+<script src="../lib/jquery.js"></script>
+<script>
+var lenup = 0,
+    lendown = 0,
+    templen = 0;
+	document.onclick = function(event) {
+		event = event || window.event;
+		if (event.clientX > 160) {
+			$.testblur();
+		}
+	}
+
+$(function($){
+	$('#searchword').bind('input',function(){
+		var $boxnode = $('#searchword').next(),
+		    $listnode = $boxnode.children().eq(1),
+		    content = $('#searchword').val(),
+		    $searchnode = $("<div>"+content+"</div>"),
+		    i = 0;
+
+		$boxnode.children().eq(0).val(content);
+		$boxnode.hide();
+		$searchnode.bind('click',function(){
+			$('#searchword').val($(this).text());
+			$.testblur();
+		});
+		$searchnode.bind('mouseover',function(){
+			$(this).siblings().removeClass("highlight");
+			$(this).addClass("highlight");					
+		});
+		$searchnode.bind('mouseout',function(){
+			$(this).removeClass('highlight');
+		});
+		/*$.get("demoajaxcontent.txt",function(data){
+			var words = data.split(" ");		
+			var wordslen = words.length;
+			for (i = 0; i < wordslen; i++) {
+				var $searchnode = $("<div></div>");
+				var teststr = eval("/^"+ content + ".*$/");
+				if (teststr.test(words[i])) {
+					$searchnode.html(words[i]);
+					$searchnode.bind('click',function(){
+						$("#searchword").val($searchnode.html());
+						$.testblur();
+					});
+					$searchnode.bind('mouseover',function(){
+						$searchnode.siblings().removeClass("highlight");
+						$searchnode.addClass("highlight");					
+					});
+					if($.trim(content) != ""){
+						$listnode.append($searchnode);
+					}
+				}
+			}
+		});*/
+		if($.trim(content) != ""){
+			$listnode.append($searchnode);
+			$boxnode.show();
+		}else{
+			$.testblur();
+		}
+	});
+	$('#searchword').bind('keydown',function(event){
+		event = event || window.event;
+		if (event.which == 38 || event.which == 40) {
+			var $listnode = $('#searchword').next().children().eq(1),
+			    $searchnode = $listnode.children(), 
+			    listlen = $searchnode.length,
+			    orgcontent = $('#searchword').next().children().eq(0).val(),
+			    i = 0;
+			
+			if (templen != listlen) {
+				lenup = listlen;
+				lendown = -1;
+			}
+			for (i = 0; i < listlen; i++) {
+				if ($searchnode.eq(i).hasClass('highlight')) {
+					lenup = lendown = i;
+				}
+			}
+			$searchnode.removeClass('highlight');
+			if ($.trim($('#searchword').val()) == "") {
+				return false;
+			} else {
+				switch (event.which) {
+				case 38://向上键
+					lenup--;
+					if (lenup == -1) {
+						$('#searchword').val(orgcontent);
+						lenup = listlen;
+					} else {
+						$searchnode.eq(lenup).addClass('highlight');
+						$('#searchword').val($searchnode.eq(lenup).text());
+					}
+					break;
+				case 40://向下键
+					lendown++;
+					if (lendown == listlen) {
+						$('#searchword').val(orgcontent);
+						lendown = -1;
+					} else {
+						$searchnode.eq(lendown).addClass('highlight');
+						$('#searchword').val($searchnode.eq(lendown).text());
+					}
+					break;
+				default:
+					break;
+				}
+				templen = listlen;
+			}
+		}
+	});
+});
+
+$.extend({
+	testblur:function(){
+		var $boxnode = $('#searchword').next();
+		$boxnode.hide();
+		$boxnode.children().eq(1).empty();
+		$boxnode.children().eq(0).val("");
+	}
+});
+	
+</script>
+</html>

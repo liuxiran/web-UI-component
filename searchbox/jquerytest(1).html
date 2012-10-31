@@ -1,0 +1,161 @@
+<!--log
+用jquery改写的代码第一版
+DOM结构全部是自定义的，不符合控件结构要求
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+#searchlist {
+	background: #eae9eb;
+	width: 153px;
+	max-height: 250px;
+	position: relative;
+	z-index: 1000;
+	border: 1px solid #c0c0c0;
+	display: none;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#searchlist div {
+	height: 25px;
+	padding-left: 3px;
+}
+
+.highlight {
+	background: #85a2c8;
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<div>
+		<input id="searchword" style="width: 149px" >
+		<input type="hidden" id="scoreword">
+		<div id="searchlist" ></div>
+	</div>
+</body>
+<script src="../lib/jquery.js"></script>
+<script>
+var lenup = 0,
+    lendown = 0,
+    templen = 0;
+	document.onclick = function(event) {
+		event = event || window.event;
+		if (event.clientX > 160) {
+			$.testblur();
+		}
+	}
+
+$(function($){
+	$('#searchword').bind('input',function(){
+		var content = $('#searchword').val(),
+		    i = 0,optnode = $('#searchlist'),
+		    $searchnode = $("<div class='item'>"+content+"</div>");
+		$('#scoreword').val(content);
+		optnode.hide();
+		$searchnode.bind('click',function(){
+			$("#searchword").val($searchnode.html());
+			$.testblur();
+		});
+		$searchnode.bind('mouseover',function(){
+			$(this).siblings().removeClass("highlight");
+			$(this).addClass("highlight");					
+		});
+		$searchnode.bind('mouseout',function(){
+			//$('.item').removeClass('highlight');
+			$searchnode.parent().children().removeClass('highlight');
+		});
+		/*$.get("demoajaxcontent.txt",function(data){
+			var words = data.split(" ");		
+			var wordslen = words.length;
+			for (i = 0; i < wordslen; i++) {
+				var $searchnode = $("<div></div>");
+				var teststr = eval("/^"+ content + ".*$/");
+				if (teststr.test(words[i])) {
+					$searchnode.html(words[i]);
+					$searchnode.bind('click',function(){
+						$("#searchword").val($searchnode.html());
+						$.testblur();
+					});
+					$searchnode.bind('mouseover',function(){
+						$searchnode.siblings().removeClass("highlight");
+						$searchnode.addClass("highlight");					
+					});
+					if(content != ""){
+						$('#searchlist').append($searchnode);
+					}
+				}
+			}
+		});*/
+		if($.trim(content) != ""){
+			$('#searchlist').append($searchnode);
+			$('#searchlist').show();
+		}else{
+			$.testblur();
+		}
+	});
+	$('#searchword').bind('keydown',function(event){
+		event = event || window.event;
+		if (event.which == 38 || event.which == 40) {
+			var optnode = $('#searchlist'),
+			    listlen = $('.item').length,
+			    i = 0;
+			
+			if (templen != listlen) {
+				lenup = listlen;
+				lendown = -1;
+			}
+			for (i = 0; i < listlen; i++) {
+				if ($('.item:eq('+i+')').hasClass('highlight')) {
+					lenup = lendown = i;
+				}
+			}
+			$('.item').removeClass('highlight');
+			if ($.trim($('#searchword').val()) == "") {
+				return false;
+			} else {
+				switch (event.which) {
+				case 38://向上键
+					lenup--;
+					if (lenup == -1) {
+						$('#searchword').val($('#scoreword').val());
+						lenup = listlen;
+					} else {
+						$('.item:eq('+lenup+')').addClass('highlight');
+						$('#searchword').val($('.item:eq('+lenup+')').text());
+					}
+					break;
+				case 40://向下键
+					lendown++;
+					if (lendown == listlen) {
+						$('#searchword').val($('#scoreword').val());
+						lendown = -1;
+					} else {
+						$('.item:eq('+lendown+')').addClass('highlight');
+						$('#searchword').val($('.item:eq('+lendown+')').text());
+					}
+					break;
+				default:
+					break;
+				}
+				templen = listlen;
+			}
+		}
+	});
+});
+
+$.extend({
+	testblur:function(){
+		var optnode = $('#searchlist');
+		optnode.hide();
+		optnode.html("");
+		$('#scoreword').val("");
+	}
+});
+	
+</script>
+</html>
+

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+#searchlist{
+background:#eae9eb;
+width:153px;
+max-height:250px;
+position:relative;
+z-index:1000;
+border:1px solid #c0c0c0;
+display:none;
+overflow-y:auto;
+overflow-x:hidden;
+}
+#searchlist div{
+height:25px;
+padding-left:3px;
+}
+.highlight{
+background:#85a2c8;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div>
+<input id="searchword" style="width:149px" oninput="testpress()" onpropertychange="testpress()"
+onkeydown="testkey(event)" ><!-- onkeypress="testkey(event)" oninput="testpress()" -->
+<!--用来记录方向键移动以前输入框输入的内容-->
+<input type="hidden" id="scoreword">
+<div id="searchlist"></div>
+</body>
+<script>
+var xmlhttp,lenup = 0,lendown = 0,templen = 0,flag = 0;
+document.onclick = function(event){
+event = event || window.event;
+if(event.clientX > 160){
+testblur();
+}
+}
+function press(){
+
+var content = document.getElementById('searchword').value,i = 0,optnode =
+document.getElementById('searchlist');
+console.log(content);
+document.getElementById('scoreword').value = content;
+optnode.innerHTML = "";
+optnode.style.display = "none";
+loadXMLDoc("ajaxcontent.txt",function(){//我们常见的ajax的使用过程就出现了。
+if (xmlhttp.readyState==4){
+var words = xmlhttp.responseText.split(" "),wordslen = words.length;
+for(i=0;i<wordslen;i++){
+var searchnode = document.createElement("div"),teststr =
+eval( "/^"+content+".*$/");
+if(teststr.test(words[i])){
+searchnode.innerHTML = words[i];
+searchnode.onclick = function(){
+document.getElementById("searchword").value = this.innerHTML;
+testblur();
+};
+searchnode.onmouseover = function(){
+var childrenlists = optnode.childNodes,listlen =
+childrenlists.length;
+for(i=0;i<listlen;i++){
+removeClass(childrenlists[i], "highlight");
+}
+addClass(this,"highlight")
+}
+if(content != ""){
+optnode.appendChild(searchnode);
+optnode.style.display = "block";
+} else {
+testblur();
+}
+}
+}
+}
+});
+}
+function testpress(){
+if(flag == 0){
+press();
+}else if(flag == 1){
+flag = 0;
+}
+}
+function testblur(){
+var optnode = document.getElementById('searchlist');
+optnode.style.display = "none";
+optnode.innerHTML = "";
+document.getElementById('scoreword').value = "";
+}
+function loadXMLDoc(url,cfunc){
+//
+/*if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+xmlhttp=new XMLHttpRequest();
+} else {// code for IE6, IE5
+xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+}*/
+/*此方法是为了避免双击直接在浏览器中运行时IE下出现的拒绝访问的错误*/
+if(window.ActiveXObject){
+try {
+xmlhttp = new ActiveXObject("Msxml2.XMLHTTP.4.0");
+} catch(e1){
+try {
+xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+} catch(e2) {
+xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+}
+}
+} else if(window.XMLHttpRequest){
+xmlhttp = new XMLHttpRequest();
+}
+/**********************************/
+xmlhttp.onreadystatechange=cfunc;
+xmlhttp.open("GET",url,true);
+xmlhttp.send();
+}
+function testkey(event){
+event = event || window.event;
+console.log(event);
+if(event.keyCode == 38 || event.keyCode == 40){
+flag = 1;
+var optnode = document.getElementById('searchlist'),childrenlists =
+optnode.childNodes,listlen = childrenlists.length,i=0;
+var testchild = $('searchlist').children()
+console.log("templen"+templen);
+if(templen != listlen){
+lenup = listlen;
+lendown = -1;
+}
+for(i=0;i<listlen;i++){
+if(hasClass(childrenlists[i],"highlight")){
+lenup = lendown = i;
+}
+removeClass(childrenlists[i], "highlight");
+}
+if(document.getElementById('searchword').value == ""){
+return false;
+}else{
+switch( event.keyCode ){
+case 38://向上键
+lenup --;
+if(lenup == -1){
+document.getElementById('searchword').value =
+document.getElementById('scoreword').value;
+lenup = listlen;
+} else {
+addClass(childrenlists[lenup],"highlight");
+document.getElementById('searchword').value =
+childrenlists[lenup].innerHTML;
+}
+break;
+case 40://向下键
+lendown ++;
+if(lendown == listlen){
+document.getElementById('searchword').value =
+document.getElementById('scoreword').value;
+lendown = -1;
+} else {
+addClass(childrenlists[lendown],"highlight");
+document.getElementById('searchword').value =
+childrenlists[lendown].innerHTML;
+}
+break;
+default:break;
+}
+templen = listlen;
+}
+}
+}
+function hasClass(obj, cls) {
+return obj.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+}
+function addClass(obj, cls) {
+if (!this.hasClass(obj, cls)) obj.className += " " + cls;
+}
+function removeClass(obj, cls) {
+if (hasClass(obj, cls)) {
+var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+obj.className = obj.className.replace(reg, '');
+}
+}
+</script>
+</html>

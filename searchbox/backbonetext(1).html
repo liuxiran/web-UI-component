@@ -1,0 +1,65 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SearchBox Demo</title>
+<style>
+.searchbox-searchlist {
+	background: #eae9eb;
+	width: 153px;
+	max-height: 250px;
+	position: relative;
+	z-index: 1000;
+	border: 1px solid #c0c0c0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.searchbox-searchlist div {
+	/*height: 25px;*/
+	padding-left: 3px;
+}
+
+.highlight {
+	background: #85a2c8;
+	cursor: pointer;
+}
+
+.searchbox {
+	display:none;
+	position:absolute;
+}
+
+li {
+	list-style:none outside none;
+	width:200px;
+	float:left;
+}
+</style>
+</head>
+<body>
+	<div>
+		<ul>
+			<li>test1</li>
+			<li>
+				<input  ><!-- 用户自己定义的 -->
+				<input id="searchword1" class="cs2c_searchbox" style="width: 149px">
+			</li>
+			<li>
+				<input id="searchword" class="cs2c_searchbox" style="width: 149px" ><!-- 用户自己定义的 -->	
+			</li>		
+		</ul>
+	</div>
+
+</body>
+<script src="../lib/jquery.js"></script>
+<script src="../lib/underscore.js"></script>
+<script src="../lib/backbone.js"></script>
+<script src="searchbox1.js"></script>
+<script>
+	var demotest1 = new searchBoxView({'id':'searchword1'});
+	var demotest = new searchBoxView({'id':'searchword'});
+</script>
+</html>
