@@ -43,10 +43,10 @@ $(function () {
 			$(this.el).removeClass("highlight");
 		},
 		empitylist : function() {
-			this.boxnode = $('#'+this.options.inputid+'').next();
-			this.boxnode.hide();
-			this.boxnode.children().eq(1).empty();
-			this.boxnode.children().eq(0).val($('#'+this.options.inputid+'').val());
+			var $boxnode = $('#'+this.options.inputid+'').next();
+			$boxnode.hide();
+			$boxnode.children().eq(1).empty();
+			$boxnode.children().eq(0).val($('#'+this.options.inputid+'').val());
 		}
 	});
 	/**
@@ -71,11 +71,6 @@ $(function () {
 		initialize : function() {
 			_.bindAll(this,'render','searchItemsList','itemsDircSelect');
 			var tempthis = this;
-			this.itemheight = this.options.itemheight +"px";
-			this.listmaxheight = this.options.itemnum * this.options.itemnum +"px";
-			this.listnode = $('#'+this.options.id+'').next().children().eq(1);
-		   	this.hiddeninput = $('#'+this.options.id+'').next().children().eq(0);
-		    
 			$(document).click(function(event){//点击输入框以外任意区域下拉框消失
 				event = event || window.event;
 				var p_x = $('#'+tempthis.options.id+'').offset().left;
@@ -92,29 +87,35 @@ $(function () {
 			this.render();
 		},
 		render : function() {
-			var $searchbox = $('<div class="searchbox"></div>');
+			var s_width = $('#'+this.options.id+'').width();
+			var $searchbox = $('<div class="search-box"></div>');
+			$searchbox.width(s_width);
 			$searchbox.insertAfter('#'+this.options.id+'');
 			$searchbox.append('<input type="hidden" class="searchbox-orgword">');
 			$searchbox.append('<div class="searchbox-searchlist" ></div>');
 		},
 		searchItemsList : function() {
+			this.searchlist = [];//返回关键词数组
+			this.optionlist = [];//返回附加选项数组
+			this.hiddeninput = $('#'+this.options.id+'').next().children().eq(0);
+			this.listnode = $('#'+this.options.id+'').next().children().eq(1);
 			this.content = $('#'+this.options.id+'').val();//输入框中输入的内容
-			this.orgcontent = this.hiddeninput.val();//隐藏输入框中的内容
+			var orgcontent = this.hiddeninput.val();//隐藏输入框中的内容
+			var itemheight = this.options.itemheight +"px";
+			var listmaxheight = this.options.itemheight * this.options.itemnum +"px";
+			$('#'+this.options.id+'').next().css("left",$('#'+this.options.id+'').offset().left);
+			this.listnode.empty();
 			this.dataInterface();
-			if(this.content == this.orgcontent){
+			if(this.content == orgcontent){
 				return false;
 			} else{
 				this.hiddeninput.val(this.content);
 				for(var i=0;i<this.searchlist.length;i++){
-					this.itemview = new searchItemView({'inputid':this.options.id,'content':this.searchlist[i],'divheight':this.itemheight});
+					this.itemview = new searchItemView({'inputid':this.options.id,'content':this.searchlist[i],'divheight':itemheight});
 					this.listnode.append(this.itemview.el);
-					this.listnode.css({'overflow-y':this.options.scroll,'max-height':this.listmaxheight});
+					this.listnode.css({'overflow-y':this.options.scroll,'max-height':listmaxheight});
 				}
-				if ($.trim(this.content) != "") {
-					$('#'+this.options.id+'').next().show();
-				} else {
-					this.itemview.empitylist();
-				}
+				this.searchlist.length == 0 ? this.itemview.empitylist() : $('#'+this.options.id+'').next().show();
 			}
 		},
 		itemsDircSelect : function(event) {
@@ -122,8 +123,9 @@ $(function () {
 			if (event.which == 38 || event.which == 40) {
 				this.searchnode = this.listnode.children();//所有词条的数组
 			    this.listlen = this.searchnode.length;//所有词条的条数总和
-			    
-				if (globalvar.searchbox_lentemp != this.listlen) {
+			    this.orgcontent = this.hiddeninput.val();
+			    var scrolltop = this.listnode.scrollTop();
+			    if (globalvar.searchbox_lentemp != this.listlen) {
 					globalvar.searchbox_lenup = this.listlen;
 					globalvar.searchbox_lendown = -1;
 				}
@@ -133,18 +135,17 @@ $(function () {
 					}
 				}
 				this.searchnode.removeClass('highlight');
-				if ($.trim($('#'+this.options.id+'').val()) == "") {
-					return false;
-				} else {
-					switch (event.which) {
+				switch (event.which) {
 					case 38://向上键
 						globalvar.searchbox_lenup--;
 						if (globalvar.searchbox_lenup == -1) {
 							$('#'+this.options.id+'').val(this.orgcontent);
 							globalvar.searchbox_lenup = this.listlen;
 						} else {
+							scrolltop = scrolltop -this.options.itemheight;
 							this.searchnode.eq(globalvar.searchbox_lenup).addClass('highlight');
 							$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lenup).text());
+							this.listnode.scrollTop(scrolltop);
 						}
 						break;
 					case 40://向下键
@@ -153,41 +154,28 @@ $(function () {
 							$('#'+this.options.id+'').val(this.orgcontent);
 							globalvar.searchbox_lendown = -1;
 						} else {
+							scrolltop = scrolltop +this.options.itemheight;
 							this.searchnode.eq(globalvar.searchbox_lendown).addClass('highlight');
 							$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lendown).text());
+							this.listnode.scrollTop(scrolltop);
 						}
 						break;
 					default:
 						break;
 					}
 					globalvar.searchbox_lentemp = this.listlen;
-					}
 				}
 			},
-			dataInterface : function() {
-				//还有一个错误处理的过程
+			dataInterface : function() {//数据处理过程
 				$.ajaxSetup({async:false});
-				var tempthis = this
-				this.searchlist = {};//返回关键词数组
-				this.optionlist = {};//返回附加选项数组
-				$.post(this.options.url,{'postdata':this.content},function(data){
-					if(data.flag){
-						tempthis.searchlist = data.values.key;
-						tempthis.optionlist = data.values.options;
-					}
+				var tempthis = this;
+				$.post(this.options.url,{"postdate":$.trim(this.content)},function(data){
+					$.each(data.msg.values,function(index,obj){
+						tempthis.searchlist[index] = obj.key;//关键字
+						tempthis.optionlist[index] = obj.options;//附加属性
+					});
 				});
-				 $.ajaxSetup({async:true});
+				$.ajaxSetup({async:true});
 			}
 		});
 	}());
-
-//返回符合搜索条件的候选词条组
-//传入数据名：postData，返回值data的数据结构为：
-/*$.post(this.options.url,{"usernamePrefix":this.content},function(data){
-	console.log(data);
-	tempthis.searchlist = data.msg.singleData;
-	$.each(tempthis.searchlist,function(i,n){
-		console.log(i+"->"+n);
-	});
-	console.log(tempthis.searchlist);
-});*/
