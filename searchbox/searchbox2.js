@@ -87,12 +87,11 @@ $(function () {
 			this.render();
 		},
 		render : function() {
-			var s_width = $('#'+this.options.id+'').width();
+			var s_width = $('#'+this.options.id+'').width()+4;
 			var $searchbox = $('<div class="search-box"></div>');
-			$searchbox.width(s_width);
 			$searchbox.insertAfter('#'+this.options.id+'');
 			$searchbox.append('<input type="hidden" class="searchbox-orgword">');
-			$searchbox.append('<div class="searchbox-searchlist" ></div>');
+			$searchbox.append('<div class="searchbox-searchlist" style="width:'+s_width+'px"></div>');
 		},
 		searchItemsList : function() {
 			this.searchlist = [];//返回关键词数组
