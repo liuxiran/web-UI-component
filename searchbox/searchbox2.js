@@ -41,12 +41,6 @@ $(function () {
 		},
 		itemBlur : function() {
 			$(this.el).removeClass("highlight");
-		},
-		empitylist : function() {
-			var $boxnode = $('#'+this.options.inputid+'').next();
-			$boxnode.hide();
-			$boxnode.children().eq(1).empty();
-			$boxnode.children().eq(0).val($('#'+this.options.inputid+'').val());
 		}
 	});
 	/**
@@ -78,8 +72,7 @@ $(function () {
 				var p_y = $('#'+tempthis.options.id+'').offset().top;
 				var p_h = $('#'+tempthis.options.id+'').offset().top + $('#'+tempthis.options.id+'').height();
 				if(event.clientX<p_x || event.clientX>p_w || event.clientY<p_y || event.clientY>p_h){
-					var testview = new searchItemView({'inputid':tempthis.options.id});
-					testview.empitylist();
+					tempthis.empitylist();
 				}
 			});
 			$('.cs2c_searchbox').bind('input',this.searchItemsList);
@@ -99,13 +92,12 @@ $(function () {
 			this.hiddeninput = $('#'+this.options.id+'').next().children().eq(0);
 			this.listnode = $('#'+this.options.id+'').next().children().eq(1);
 			this.content = $('#'+this.options.id+'').val();//输入框中输入的内容
-			var orgcontent = this.hiddeninput.val();//隐藏输入框中的内容
 			var itemheight = this.options.itemheight +"px";
 			var listmaxheight = this.options.itemheight * this.options.itemnum +"px";
 			$('#'+this.options.id+'').next().css("left",$('#'+this.options.id+'').offset().left);
 			this.listnode.empty();
 			this.dataInterface();
-			if(this.content == orgcontent){
+			if(this.content == this.hiddeninput.val()){
 				return false;
 			} else{
 				this.hiddeninput.val(this.content);
@@ -114,7 +106,7 @@ $(function () {
 					this.listnode.append(this.itemview.el);
 					this.listnode.css({'overflow-y':this.options.scroll,'max-height':listmaxheight});
 				}
-				this.searchlist.length == 0 ? this.itemview.empitylist() : $('#'+this.options.id+'').next().show();
+				this.searchlist.length == 0 ? this.empitylist() : $('#'+this.options.id+'').next().show();
 			}
 		},
 		itemsDircSelect : function(event) {
@@ -152,6 +144,7 @@ $(function () {
 						if (globalvar.searchbox_lendown == this.listlen) {
 							$('#'+this.options.id+'').val(this.orgcontent);
 							globalvar.searchbox_lendown = -1;
+							this.listnode.scrollTop(0);
 						} else {
 							scrolltop = scrolltop +this.options.itemheight;
 							this.searchnode.eq(globalvar.searchbox_lendown).addClass('highlight');
@@ -164,6 +157,12 @@ $(function () {
 					}
 					globalvar.searchbox_lentemp = this.listlen;
 				}
+			},
+			empitylist : function() {
+				var $boxnode = $('#'+this.options.id+'').next();
+				$boxnode.hide();
+				$boxnode.children().eq(1).empty();
+				$boxnode.children().eq(0).val($('#'+this.options.id+'').val());
 			},
 			dataInterface : function() {//数据处理过程
 				$.ajaxSetup({async:false});
