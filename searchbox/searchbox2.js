@@ -32,8 +32,7 @@ $(function () {
 			return this;
 		},
 		selectItem : function() {
-			$('#'+this.options.inputid+'').val($(this.el).text());
-			this.empitylist();			
+			$('#'+this.options.inputid+'').val($(this.el).text());			
 		},
 		pointItem : function() {
 			$(this.el).siblings().removeClass("highlight");
@@ -60,10 +59,11 @@ $(function () {
 			url:null,//进行ajax过程中的action的地址，此处post的data名称是固定的，为postdata，在写对应的action的时候需要注意
 			scroll:'auto',//词条下拉框是否有滚动条，参数可以填两个，auto：有滚动条，hidden：无滚动条
 			itemheight:25,//每一个词条的宽度，默认是25，作用是用来计算整个下拉框的最大高度和给searchItemView中的divheight传值
-			itemnum:10//下拉框中无滚动条时显示词条的最大数目
+			itemnum:10,//下拉框中无滚动条时显示词条的最大数目
+			enterfunc:false//enter键的处理方式，默认false用控件自己的处理方式，用户可直接定义funciton
 		},
 		initialize : function() {
-			_.bindAll(this,'render','searchItemsList','itemsDircSelect');
+			_.bindAll(this,'render','searchItemsList','itemsDircSelect','keyDownDistribute','enterKeySelect');
 			var tempthis = this;
 			$(document).click(function(event){//点击输入框以外任意区域下拉框消失
 				event = event || window.event;
@@ -76,15 +76,15 @@ $(function () {
 				}
 			});
 			$('.cs2c_searchbox').bind('input',this.searchItemsList);
-			$('.cs2c_searchbox').bind('keydown',this.itemsDircSelect);
+			$('.cs2c_searchbox').bind('keydown',this.keyDownDistribute);
 			this.render();
 		},
 		render : function() {
 			var s_width = $('#'+this.options.id+'').width()+4;
 			var $searchbox = $('<div class="search-box"></div>');
-			$searchbox.insertAfter('#'+this.options.id+'');
 			$searchbox.append('<input type="hidden" class="searchbox-orgword">');
 			$searchbox.append('<div class="searchbox-searchlist" style="width:'+s_width+'px"></div>');
+			$('#'+this.options.id+'').after($searchbox);
 		},
 		searchItemsList : function() {
 			this.searchlist = [];//返回关键词数组
@@ -109,53 +109,65 @@ $(function () {
 				this.searchlist.length == 0 ? this.empitylist() : $('#'+this.options.id+'').next().show();
 			}
 		},
-		itemsDircSelect : function(event) {
+		keyDownDistribute : function(event){
 			event = event || window.event;
 			if (event.which == 38 || event.which == 40) {
-				this.searchnode = this.listnode.children();//所有词条的数组
-			    this.listlen = this.searchnode.length;//所有词条的条数总和
-			    this.orgcontent = this.hiddeninput.val();
-			    var scrolltop = this.listnode.scrollTop();
-			    if (globalvar.searchbox_lentemp != this.listlen) {
-					globalvar.searchbox_lenup = this.listlen;
-					globalvar.searchbox_lendown = -1;
+				this.itemsDircSelect(event);
+			} else if (event.which == 13) {
+				this.enterKeySelect();
+			}
+		},
+		itemsDircSelect : function(event) {
+			
+			this.searchnode = this.listnode.children();//所有词条的数组
+			this.listlen = this.searchnode.length;//所有词条的条数总和
+		        this.orgcontent = this.hiddeninput.val();
+			var scrolltop = this.listnode.scrollTop();
+			if (globalvar.searchbox_lentemp != this.listlen) {
+				globalvar.searchbox_lenup = this.listlen;
+				globalvar.searchbox_lendown = -1;
+			}
+			for (var i = 0; i < this.listlen; i++) {
+				if (this.searchnode.eq(i).hasClass('highlight')) {
+					globalvar.searchbox_lenup = globalvar.searchbox_lendown = i;
 				}
-				for (var i = 0; i < this.listlen; i++) {
-					if (this.searchnode.eq(i).hasClass('highlight')) {
-						globalvar.searchbox_lenup = globalvar.searchbox_lendown = i;
+			}
+			this.searchnode.removeClass('highlight');
+			switch (event.which) {
+				case 38://向上键
+					globalvar.searchbox_lenup--;
+					if (globalvar.searchbox_lenup == -1) {
+						$('#'+this.options.id+'').val(this.orgcontent);
+						globalvar.searchbox_lenup = this.listlen;
+					} else {
+						scrolltop = scrolltop -this.options.itemheight;
+						this.searchnode.eq(globalvar.searchbox_lenup).addClass('highlight');
+						$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lenup).text());
+						this.listnode.scrollTop(scrolltop);
 					}
+					break;
+				case 40://向下键
+					globalvar.searchbox_lendown++;
+					if (globalvar.searchbox_lendown == this.listlen) {
+						$('#'+this.options.id+'').val(this.orgcontent);
+						globalvar.searchbox_lendown = -1;
+						this.listnode.scrollTop(0);
+					} else {
+						scrolltop = scrolltop +this.options.itemheight;
+						this.searchnode.eq(globalvar.searchbox_lendown).addClass('highlight');
+						$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lendown).text());
+						this.listnode.scrollTop(scrolltop);
+					}
+					break;
+				default:
+					break;
 				}
-				this.searchnode.removeClass('highlight');
-				switch (event.which) {
-					case 38://向上键
-						globalvar.searchbox_lenup--;
-						if (globalvar.searchbox_lenup == -1) {
-							$('#'+this.options.id+'').val(this.orgcontent);
-							globalvar.searchbox_lenup = this.listlen;
-						} else {
-							scrolltop = scrolltop -this.options.itemheight;
-							this.searchnode.eq(globalvar.searchbox_lenup).addClass('highlight');
-							$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lenup).text());
-							this.listnode.scrollTop(scrolltop);
-						}
-						break;
-					case 40://向下键
-						globalvar.searchbox_lendown++;
-						if (globalvar.searchbox_lendown == this.listlen) {
-							$('#'+this.options.id+'').val(this.orgcontent);
-							globalvar.searchbox_lendown = -1;
-							this.listnode.scrollTop(0);
-						} else {
-							scrolltop = scrolltop +this.options.itemheight;
-							this.searchnode.eq(globalvar.searchbox_lendown).addClass('highlight');
-							$('#'+this.options.id+'').val(this.searchnode.eq(globalvar.searchbox_lendown).text());
-							this.listnode.scrollTop(scrolltop);
-						}
-						break;
-					default:
-						break;
-					}
-					globalvar.searchbox_lentemp = this.listlen;
+				globalvar.searchbox_lentemp = this.listlen;
+			},
+			enterKeySelect : function(){
+				this.emptylist();
+				if(this.options.enterfunc){
+					this.options.enterfunc();
 				}
 			},
 			empitylist : function() {
