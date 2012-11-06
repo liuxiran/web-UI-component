@@ -9,9 +9,9 @@ $(function () {
 		},
 		initialize : function() {
 			_.bindAll(this,'render','inputValidate','inputFocus','inputBlur');
-			$('.cs2c_validatebox').bind('input',this.inputValidate);
-			$('.cs2c_validatebox').bind('focus',this.inputFocus);
-			$('.cs2c_validatebox').bind('blur',this.inputBlur);
+			$('#'+this.options.id+'').bind('input',this.inputValidate);
+			$('#'+this.options.id+'').bind('focus',this.inputFocus);
+			$('#'+this.options.id+'').bind('blur',this.inputBlur);
 			this.render();
 		},
 		render : function() {//tip的页面元素
