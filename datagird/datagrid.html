@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=GB2312" />
+<meta http-equiv="X-UA-Compatible" value="IE=edge" />
+<title>Backbone UI</title>
+<link type="text/css" rel="stylesheet" href="themes/icon.css">
+
+
+<link type="text/css" rel="stylesheet" href="themes/cs2c_dialog.css">
+<script src='../lib/jquery.js' type='text/javascript'></script>
+<script src='../lib/underscore.js' type='text/javascript'></script>
+<!--script src='themes/2_json2.js' type='text/javascript'></script>
+<script src='themes/has_model.js' type='text/javascript'></script-->
+<script src='../lib/backbone.js' type='text/javascript'></script>
+
+<script src='../lib/laconic.js' type='text/javascript'></script>
+<script src='themes/pagerView.js' type='text/javascript'></script>
+<script src='themes/searchbox.js' type='text/javascript'></script>
+<script src='themes/cs2c_dialog.js' type='text/javascript' charset='utf-8'></script>
+<script src='themes/validatebox.js' type='text/javascript'></script>
+
+<!--<script src='Operation.js' type='text/javascript'></script>-->
+
+<script src='themes/backbone_ui.js' type='text/javascript'></script>
+<script src='themes/datagridView.js' type='text/javascript'></script>
+<script src='themes/ManageView.js' type='text/javascript'></script>
+<link rel='stylesheet' type='text/css' href='themes/table_view.css'>
+</head>
+
+<body>
+<div id="cs2c_datagrid"></div>
+<div style="margin:10px 0">
+		<a id="test" href="#">Open</a>
+</div>
+
+<div id="cs2c_dialog" style="padding:20px">
+	<div>
+		<span>姓名：</span>
+		<input id="validatebox1" class="cs2c_validatebox" required>
+	</div>
+	<div>
+		<span>邮箱：</span>
+		<input id="validatebox2" class="cs2c_validatebox" required>
+	</div>
+	
+</div>
+<script type="text/javascript">
+
+	
+    $(window).load(function() {
+		
+
+     var   table = new TableManageView({
+		  //pagination:true,
+		  parentEl:"#cs2c_datagrid",
+          url:'my.json',
+		  data:[{
+				name:"tenth",
+				number:"10",
+				temp:"yanpeiqiong"
+				},
+				{
+				name:"eleven",
+				number:"11",
+				temp:"tianyuanyuan"
+				},
+				{
+				name:"twelve",
+				number:"12",
+				temp:"weiting"
+		  }],
+          onItemClick : function(model) {
+			//alert("You will delete the row!!");
+			//this.model.remove(model);
+			//this.model.add({"name":"zero","number":"0"});
+			//model.set({"name":"first11"});
+            alert(model.get('name'));
+          },
+		  toolbar:[
+		  {
+				id : 'btnadd2',
+				text : '添加',
+				disabled : false,
+				iconCls : 'icon-add',
+				handler : function() {					
+					this.allModels.push({"name":"zero","number":"0","temp":"ypq"});
+					this.setCollection();
+				}
+		  },
+		  {
+				id : 'btncut',
+				disabled : true,
+				text : '删除',
+				iconCls : 'icon-cancel',
+				handler : function() {
+					//this.collection.remove()
+				}
+			},
+			{
+				id:'datagrid_serchbox',
+				type:'searchbox'
+			}
+		  ],
+		 
+		code:true,			 
+		checkbox:true,
+		
+		  columns : [
+		  {
+				sortable : true,
+				width : 300,
+				title : 'Name',		
+				content : 'name',
+				formatter:function(value,rowData,rowIndex){
+					return value+rowIndex ;
+				}
+          }, 
+		  {
+				title : 'Number',
+				width : 100,
+				content : 'number'
+          },
+		  {
+			    width : 300,
+			    sortable : true,
+				title : 'Engineer',           
+				content : 'temp'
+          },
+		  {
+				title : 'Operations',
+				width :100,
+				operations:function(value,rowData,rowIndex){
+				/*
+				var optStr={
+					name: rowData.get("name"),
+					number:rowData.get("number"),
+					temp:rowData.get("temp")
+				}
+				var operate=[];
+				operate.push(createOption("fun",json2str(optStr), "删除","icon-migrate_delete"));
+				operate.push(createOption("edit",json2str(optStr), "编辑","icon-migrate_edit"));
+				return operate.join(" ");
+				*/
+				//var option1= '<span class="opt_delete">删除</span>';
+				//var option2='<span class="opt_edit">编辑</span>';
+				//return option1+" "+option2;
+				
+				var operate=[];
+				operate.push({optUrl:"ddddddd.action",optName:"opt_delete",optMsg:"确定要删除吗？",showName:"删除"});
+				operate.push({optUrl:"edit.action",optName:"opt_edit",optMsg:"确定要修改吗？",showName:"编辑"});
+				return operate;
+			}
+		  }
+		  ],
+		  pager:{
+				pageNo:1,
+				pageSize:3,
+				pageList:[3,5,10,15]
+		  }
+		  
+        });	   
+	   var dialog_validate_demo = Backbone.View
+			.extend({
+				el : $('body'),
+				initialize : function() {
+					_.bindAll(this, 'render', 'dialogOpen');
+					$('#test').bind('click', this.dialogOpen);
+					this.render();
+				},
+				render : function() {
+					var that = this;
+					this.dialog = new CS2C_Dialog({
+						dialog_content_id : "cs2c_dialog",
+						title : "demo对话框",
+						buttons : [ {
+							id : 'ok',
+							text : '确定'
+						}, {
+							id : 'cancel',
+							text : '取消'
+						} ],
+						width : "300",
+						height : "150",
+						closable : true
+					}).render();
+
+					this.validatebox1 = new validateBoxView(
+							{
+								'id' : 'validatebox1',
+								'tipmsg' : '请勿输入除英文字母（不区分大小写）、下划线、数字和汉字之外的字符，字符个数不小于2且不大于10。',
+								'reg_exp' : /^(\w|[\u4E00-\u9FA5\_]){2,10}$/,
+								'reqmsg' : '必填项'
+							});
+					this.validatebox2 = new validateBoxView(
+							{
+								'id' : 'validatebox2',
+								'tipmsg' : '请输入正确的邮箱地址格式',
+								'reg_exp' : /^[a-zA-Z0-9]([a-zA-Z0-9\.]*[-_]?[a-zA-Z0-9]+)*@([a-zA-Z0-9]*[-_]?[a-zA-Z0-9]+)+[\.][a-zA-Z]{2,3}([\.][a-zA-Z]{2})?$/,
+								'reqmsg' : '必填项'
+							});
+					this.dialog.okPressed = function() {
+						var validates = [];
+						var cont = 0;
+						validates.push(that.validatebox1);
+						validates.push(that.validatebox2);
+						for ( var i = 0; i < validates.length; i++) {
+							if (!validates[i].inputValidate()) {
+								cont++;
+								return false;
+							}
+						}
+						if (cont == 0) {
+							that.dialog.closeDialog();
+						}
+					};
+				},
+				dialogOpen : function() {
+					var that = this;
+					this.dialog.openDialog();
+					that.dialog.isInnerMask(true);
+					setTimeout(function() {
+						that.dialog.isInnerMask(false);
+					}, 500);
+				}
+
+			});
+	var demotest = new dialog_validate_demo();
+    });
+  </script>
+</body>
+</html>

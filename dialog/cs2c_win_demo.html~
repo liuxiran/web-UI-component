@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="lib/jquery_1.8.2.js"></script>
+<script type="text/javascript" src="lib/underscore.js"></script>
+<script type="text/javascript" src="lib/backbone.js"></script>
+
+<script type="text/javascript" src="backbone-js/cs2c_dialog.js"></script>
+<link rel="stylesheet" href="backbone-js/cs2c_dialog.css">
+	
+</head>
+<body>
+<h2>cs2c Window</h2>
+
+<div style="margin:10px 0">
+		<a id="test" href="#">Open</a>
+</div>
+
+<div id="b-dialog" style="padding: 10px">
+第一个对话框
+这是一个普通对话框的panel空白区域。
+<br>
+<a id="show" href="#">show</a>
+<a id="showmask" href="#">show mask</a>
+
+<div id="ptest">
+<p>对话框内容在此处显示。</p>
+<p>对话框内容在此处显示。</p>
+<p>对话框内容在此处显示。</p>
+<p>对话框内容在此处显示。</p>
+<p>对话框内容在此处显示。</p>
+<p>对话框内容在此处显示。</p>
+</div>
+
+</div>
+
+
+<div id="dialog2" style="padding: 10px">
+<p>第二个对话框</p>
+<a id="show2" href="#">show2</a>
+</div>
+
+
+
+</body>
+</html>
