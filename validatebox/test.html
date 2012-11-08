@@ -9,7 +9,7 @@
 					float:left;
 				}
 				.validate_tip {
-					position:absolute;
+					position:fixed;
 					border:1px solid #ccc;
 					padding:5px;
 					margin-left:7px;
@@ -36,7 +36,9 @@
 	<body>
 		<div>
 		<ul>
-			<li>test1</li>
+			<li>
+				test
+			</li>
 			<li>
 				<input id="searchword1" class="cs2c_searchbox" style="width: 149px" ><!-- 用户自己定义的 -->
 			</li>
@@ -55,30 +57,7 @@
 	<script src="../lib/underscore.js"></script>
 	<script src="../lib/backbone.js"></script>
 	<script src="validatebox.js"></script>
-	<script>
-	$(function(){
-		testview = Backbone.View.extend({
-			el : $('body'),
-			initialize : function() {
-			_.bindAll(this,'render');
-			this.render();
-		},
-		render : function() {//tip的页面元素
-			var rule = new validateclass();
-			var tesdemo = new validateBoxView({
-						'id':'validatebox',
-						'tipmsg':'请输入正确的邮箱地址格式',
-						'reg_exp':rule.test(),
-						'reqmsg':'必填项'
-						});
-		},
-		});
-		validateclass = function(){
-			this.test = function(){
-				return /^([\w]+)(.[\w]+)*@([\w-]+\.){1,5}([A-Za-z]){2,4}$/;
-			}
-		}
-		var start = new testview();
-	});
+	<script src="test.js">
+	
 	</script>
 </html>
